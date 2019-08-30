@@ -5,5 +5,9 @@ python:
   - "3.6"
   - "3.7"
 
+install:
+  - if [[ "${TRAVIS_PYTHON_VERSION}" == "3.7" ]]; 
+    then pip install --quiet --requirement ci-requirements.txt; fi
+
 script:
   - echo "Here we go!"
