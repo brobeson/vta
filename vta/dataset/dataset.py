@@ -77,5 +77,5 @@ def main(arguments):
     Raises:
         Nothing
     """
-    print("Running data set download")
+    print("Dataset", arguments.dataset, "is not yet implemented.")
     return 0

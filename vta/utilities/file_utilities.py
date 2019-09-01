@@ -9,6 +9,7 @@ import sys
 class DirectoryValidator:  # pylint: disable=too-many-instance-attributes,too-few-public-methods
     """Validates that a command argument represents a legitimate directory."""
 
+    # #lizard forgives
     def __init__(  # pylint: disable=too-many-arguments
         self,
         option_strings,
