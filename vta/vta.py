@@ -11,16 +11,10 @@ def main():
     This function is the main entry point for all VTA commands. Running this
     function in your script is equivalent to running VTA from the command line.
 
-    Args:
-        None
-
-    Returns:
-        An integer exit code following Unix command conventions. 0 indicates
+    :return: An exit code following Unix command conventions. 0 indicates
         that command processing succeeded. Any other value indicates that an
         error occurred.
-
-    Raises:
-        Nothing
+    :rtype: int
     """
     master_parser = argparse.ArgumentParser(
         prog="vta",

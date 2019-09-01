@@ -12,56 +12,14 @@ SUBSETS = {
 }
 
 
-# The PyLint suppressions are necessary. This class implements the
-# argparse.Action interface, so it must be this way.
-class SubsetLister:  # pylint: disable=too-many-instance-attributes,too-few-public-methods
-    """Validates that a command argument represents a legitimate directory."""
-
-    # #lizard forgives
-    def __init__(  # pylint: disable=too-many-arguments
-        self,
-        option_strings,
-        dest,
-        nargs=None,
-        const=None,
-        default=None,
-        type=None,  # pylint: disable=redefined-builtin
-        choices=None,
-        required=False,
-        help=None,  # pylint: disable=redefined-builtin
-        metavar=None,
-    ):
-        self.option_strings = option_strings
-        self.dest = dest
-        self.nargs = nargs
-        self.const = const
-        self.default = default
-        self.type = type
-        self.choices = choices
-        self.required = required
-        self.help = help
-        self.metavar = metavar
-
-    def __call__(self, parser, namespace, values, option_string):
-        for subset in SUBSETS[namespace.dataset]:
-            print(subset)
-        sys.exit(0)
-
-
 def make_parser(subparsers):
     """Creates an argument parser for the VTA dataset command.
 
-    Args:
-        subparsers: The subparsers object returned by a call to
-            argparse.ArgumentParser.add_subparsers(). The dataset argument
-            parser will be added to this.
+    :param subparsers: The subparsers object returned by a call to
+        :py:func:`argparse.ArgumentParser.add_subparsers`. The dataset
+        argument parser will be added to this.
 
-    Returns:
-        Nothing
-
-    Raises:
-        Nothing: This function should not raise any exceptions. If you encounter
-            one, please file a bug issue.
+    :return: Nothing
     """
     parser = subparsers.add_parser(
         "dataset",
@@ -90,7 +48,7 @@ def make_parser(subparsers):
     parser.add_argument(
         "--list-subsets",
         help="Show the subsets that are valid for the specified subset.",
-        action=SubsetLister,
+        action=_SubsetLister,
         nargs=0,
     )
     default_root = os.path.expanduser("~/Videos")
@@ -129,33 +87,66 @@ def main(arguments):
     download a dataset, or specific sequences, according to the supplied
     arguments.
 
-    Args:
-        arguments: The command line arguments, as parsed by the argparse module.
-        Run 'vta dataset --help' for details.
+    :param argparse.Namespace arguments: The command line arguments, as parsed
+        by the :py:mod:`argparse` module. Run `vta dataset --help` for details.
 
-    Returns:
-        An integer exit code following Unix command conventions. 0 indicates
-        that command processing succeeded. Any other value indicates that an
-        error occurred.
-
-    Raises:
-        Nothing
+    :return: An exit code following Unix command conventions. 0 indicates that
+        command processing succeeded. Any other value indicates that an error
+        occurred.
+    :rtype: int
     """
     _print_summary(arguments)
     if arguments.dataset == "vot":
-        return vta.dataset.vot.download_sequences(
-            arguments.subsets,
-            arguments.root_directory,
-            arguments.force,
-            arguments.sequences,
-        )
+        return vta.dataset.vot.download_sequences()
+        # return vta.dataset.vot.download_sequences(
+        #    arguments.subsets,
+        #    arguments.root_directory,
+        #    arguments.force,
+        #    arguments.sequences,
+        # )
     print("Dataset", arguments.dataset, "is not yet implemented.")
     return 1
 
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #                                                       implementation details
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# The PyLint suppressions are necessary. This class implements the
+# argparse.Action interface, so it must be this way.
+class _SubsetLister:  # pylint: disable=too-many-instance-attributes,too-few-public-methods
+    """Validates that a command argument represents a legitimate directory."""
+
+    # #lizard forgives
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        option_strings,
+        dest,
+        nargs=None,
+        const=None,
+        default=None,
+        type=None,  # pylint: disable=redefined-builtin
+        choices=None,
+        required=False,
+        help=None,  # pylint: disable=redefined-builtin
+        metavar=None,
+    ):
+        self.option_strings = option_strings
+        self.dest = dest
+        self.nargs = nargs
+        self.const = const
+        self.default = default
+        self.type = type
+        self.choices = choices
+        self.required = required
+        self.help = help
+        self.metavar = metavar
+
+    def __call__(self, parser, namespace, values, option_string):
+        for subset in SUBSETS[namespace.dataset]:
+            print(subset)
+        sys.exit(0)
+
+
 def _print_summary(arguments):
     print("Downloading ", end="")
     if arguments.subsets is None:
