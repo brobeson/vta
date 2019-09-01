@@ -2,7 +2,7 @@
 
 import os
 
-def download_sequences(root_directory, force, subset, sequences):
+def download_sequences(subsets, root_directory, force, subset, sequences):
     """Downloads the requested sequences from the VOT dataset.
 
     Args:
