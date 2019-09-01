@@ -8,6 +8,7 @@ python:
 install:
   - if [[ "${TRAVIS_PYTHON_VERSION}" == "3.7" ]]; then
     pip install --quiet --requirement ci-requirements.txt; fi
+  - pip install --quiet sphinx
 
 before_script:
   - shopt -s globstar
