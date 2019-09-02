@@ -16,6 +16,20 @@ def main():
         error occurred.
     :rtype: int
     """
+    master_parser = make_parser()
+    arguments = master_parser.parse_args()
+    if arguments.command == "dataset":
+        return dataset.main(arguments)
+    return 0
+
+
+def make_parser():
+    """Create the argument parser for the root VTA command.
+
+    :return: The argument parser, with all common arguments and subparsers
+        added.
+    :rtype: :py:class:`argparse.ArgumentParser`
+    """
     master_parser = argparse.ArgumentParser(
         prog="vta",
         description="VTA is a suite of tools for analysing experimental results"
@@ -34,10 +48,7 @@ def main():
         dest="command",
     )
     dataset.make_parser(subparsers)
-    arguments = master_parser.parse_args()
-    if arguments.command == "dataset":
-        return dataset.main(arguments)
-    return 0
+    return master_parser
 
 
 if __name__ == "__main__":

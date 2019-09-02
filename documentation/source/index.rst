@@ -10,9 +10,11 @@ Welcome to Visual Tracking Analysis's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   command_reference
    vta
    dataset/dataset
    dataset/vot
+   utilities/file_utilities
 
 
 
