@@ -5,7 +5,7 @@ import os.path
 import pdb
 
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy
 
 
 # TODO These constants need to be converted to command line or configuration
@@ -80,7 +80,7 @@ def _graph_score_data(score_threshold, frame_data, sequence):
 
     axes.axvline(score_threshold, alpha=0.5, color="r", label="Threshold")
 
-    frame_data["positive_scores"] = np.array(frame_data["positive_scores"])
+    frame_data["positive_scores"] = numpy.array(frame_data["positive_scores"])
     _scatter_data(
         axes,
         frame_data["positive_scores"],
@@ -90,7 +90,7 @@ def _graph_score_data(score_threshold, frame_data, sequence):
     )
 
     # Draw the data for the top indices
-    frame_data["top_indices"] = np.array(frame_data["top_indices"])
+    frame_data["top_indices"] = numpy.array(frame_data["top_indices"])
     _scatter_data(
         axes,
         frame_data["positive_scores"][frame_data["top_indices"]],
@@ -144,11 +144,11 @@ def _graph_top_indices(axes, x_data, y_data):
 
 
 def _make_distance_stats(frame_data):
-    target = np.array(frame_data["target"])
-    candidates = np.array(frame_data["samples"])
+    target = numpy.array(frame_data["target"])
+    candidates = numpy.array(frame_data["samples"])
     # TODO Use numpy routines; they're probably faster.
     differences = target[0:2] - candidates[:, 0:2]
     differences = differences ** 2
-    differences = np.sum(differences, axis=1)
-    distances = np.sqrt(differences)
+    differences = numpy.sum(differences, axis=1)
+    distances = numpy.sqrt(differences)
     return distances
