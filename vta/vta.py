@@ -3,6 +3,7 @@
 import argparse
 import sys
 from vta.dataset import dataset
+from vta.scores import scores
 
 
 def main():
@@ -20,6 +21,8 @@ def main():
     arguments = master_parser.parse_args()
     if arguments.command == "dataset":
         return dataset.main(arguments)
+    elif arguments.command == "scores":
+        return scores.main(arguments)
     return 0
 
 
@@ -48,6 +51,7 @@ def make_parser():
         dest="command",
     )
     dataset.make_parser(subparsers)
+    scores.make_parser(subparsers)
     return master_parser
 
 
