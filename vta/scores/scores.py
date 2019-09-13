@@ -2,8 +2,10 @@
 
 import json
 import os.path
+import pdb
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 # TODO These constants need to be converted to command line or configuration
@@ -12,7 +14,7 @@ SCORE_DIRECTORY = os.path.expanduser(
     os.path.join("~", "repositories", "py-MDNet")
 )
 FRAME = 0
-SORT_SCORES = True
+SORT_SCORES = False
 
 
 def main(arguments):
@@ -30,7 +32,11 @@ def main(arguments):
     :rtype: int
     """
     score_data = _read_score_data(arguments.sequence)
-    _graph_score_data(score_data["frames"][FRAME])
+    _graph_score_data(
+        score_data["score_threshold"],
+        score_data["frames"][FRAME],
+        arguments.sequence,
+    )
     return 0
 
 
@@ -66,19 +72,42 @@ def _read_score_data(sequence):
     return score_data
 
 
-def _graph_score_data(score_data):
-    figure = plt.figure(figsize=(9, 6))
-    axes = _make_axes(figure)
-    _graph_data(axes, score_data["positive_scores"])
+def _graph_score_data(score_threshold, frame_data, sequence):
+    figure = plt.figure(figsize=(15, 10))
+    axes = _make_axes(figure, sequence)
+    distance_data = _make_distance_stats(frame_data)
+    # _graph_data(axes, frame_data["positive_scores"], distance_data)
+
+    axes.axvline(score_threshold, alpha=0.5, color="r", label="Threshold")
+
+    frame_data["positive_scores"] = np.array(frame_data["positive_scores"])
+    _scatter_data(
+        axes,
+        frame_data["positive_scores"],
+        distance_data,
+        "b",
+        label="Candidates",
+    )
+
+    # Draw the data for the top indices
+    frame_data["top_indices"] = np.array(frame_data["top_indices"])
+    _scatter_data(
+        axes,
+        frame_data["positive_scores"][frame_data["top_indices"]],
+        distance_data[frame_data["top_indices"]],
+        "r",
+        label="Top Scores",
+    )
+
+    # _graph_top_indices(axes,
+    axes.legend()  # This must remain after the axes.plot() calls.
     plt.show()
 
 
-def _make_axes(figure):
+def _make_axes(figure, sequence):
     axes = figure.add_subplot(1, 1, 1)
-    axes.set_title(f"Frame {FRAME} - Score Data")
+    axes.set_title(f"{sequence} - Frame {FRAME}")
     axes.autoscale(enable=True, axis="both", tight=True)
-    axes.set_xlabel("Candidate")
-    axes.set_ylabel("Raw Score")
     axes.grid(
         b=True,
         which="major",
@@ -90,13 +119,36 @@ def _make_axes(figure):
     return axes
 
 
-def _graph_data(axes, data):
+def _scatter_data(axes, x_data, y_data, color, label):
+    axes.scatter(x_data, y_data, s=3, color=color, label=label)
+    axes.set_xlabel("Candidate Scores")
+    axes.set_ylabel("Distance from Previous Target (pixels)")
+
+
+def _graph_data(axes, x_data, y_data):
     axes.plot(
-        range(len(data)),
-        sorted(data) if SORT_SCORES else data,
+        x_data,
+        sorted(y_data) if SORT_SCORES else y_data,
         color="b",
         label="Sorted" if SORT_SCORES else "Unsorted",
         linewidth=1.0,
         linestyle="-",
         alpha=1.0,
     )
+    axes.set_xlabel("Candidate")
+    axes.set_ylabel("Raw Score")
+
+
+def _graph_top_indices(axes, x_data, y_data):
+    axes.scatter(x_data, y_data, s=4, color="r")
+
+
+def _make_distance_stats(frame_data):
+    target = np.array(frame_data["target"])
+    candidates = np.array(frame_data["samples"])
+    # TODO Use numpy routines; they're probably faster.
+    differences = target[0:2] - candidates[:, 0:2]
+    differences = differences ** 2
+    differences = np.sum(differences, axis=1)
+    distances = np.sqrt(differences)
+    return distances
