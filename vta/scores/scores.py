@@ -13,8 +13,11 @@ import numpy
 SCORE_DIRECTORY = os.path.expanduser(
     os.path.join("~", "repositories", "py-MDNet")
 )
-FRAME = 0
+FRAME = 1
+FRAME_INDEX = 0
 SORT_SCORES = False
+OTB_DIRECTORY = os.path.expanduser("~/Videos/otb")
+USE_GROUND_TRUTH = True
 
 
 def main(arguments):
@@ -32,9 +35,11 @@ def main(arguments):
     :rtype: int
     """
     score_data = _read_score_data(arguments.sequence)
+    ground_truth = _read_ground_truth_data(arguments.sequence)
     _graph_score_data(
+        ground_truth[FRAME],
         score_data["score_threshold"],
-        score_data["frames"][FRAME],
+        score_data["frames"][FRAME_INDEX],
         arguments.sequence,
     )
     return 0
@@ -72,10 +77,13 @@ def _read_score_data(sequence):
     return score_data
 
 
-def _graph_score_data(score_threshold, frame_data, sequence):
+def _graph_score_data(ground_truth, score_threshold, frame_data, sequence):
     figure = plt.figure(figsize=(15, 10))
     axes = _make_axes(figure, sequence)
-    distance_data = _make_distance_stats(frame_data)
+    distance_data = _make_distance_stats(
+        ground_truth if USE_GROUND_TRUTH else numpy.array(frame_data["target"]),
+        numpy.array(frame_data["samples"]),
+    )
     # _graph_data(axes, frame_data["positive_scores"], distance_data)
 
     axes.axvline(score_threshold, alpha=0.5, color="r", label="Threshold")
@@ -143,12 +151,15 @@ def _graph_top_indices(axes, x_data, y_data):
     axes.scatter(x_data, y_data, s=4, color="r")
 
 
-def _make_distance_stats(frame_data):
-    target = numpy.array(frame_data["target"])
-    candidates = numpy.array(frame_data["samples"])
+def _make_distance_stats(target_box, candidate_boxes):
     # TODO Use numpy routines; they're probably faster.
-    differences = target[0:2] - candidates[:, 0:2]
+    differences = target_box[0:2] - candidate_boxes[:, 0:2]
     differences = differences ** 2
     differences = numpy.sum(differences, axis=1)
     distances = numpy.sqrt(differences)
     return distances
+
+
+def _read_ground_truth_data(sequence):
+    filename = os.path.join(OTB_DIRECTORY, sequence, "groundtruth_rect.txt")
+    return numpy.loadtxt(filename, delimiter=",")
