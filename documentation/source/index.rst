@@ -15,6 +15,7 @@ Welcome to Visual Tracking Analysis's documentation!
    dataset/dataset
    dataset/vot
    utilities/file_utilities
+   configuration
 
 
 
