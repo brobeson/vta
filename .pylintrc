@@ -19,9 +19,6 @@ notes=FIXME,
       BUG,
       HACK
 
-[FORMAT]
-max-line-length=80
-
 [LOGGING]
 logging-format-style=new
 
