@@ -25,23 +25,25 @@ def main(arguments, configuration):
     :rtype: int
     """
     configuration = configuration["loss"]
-    loss, precision = _read_loss_data(arguments.file)
+    losses, precisions = _read_loss_data(arguments.file)
     figure = plt.figure(figsize=(15, 10))
     axes = _make_axes(figure)
-    axes.plot(
-        range(len(loss)),
-        loss,
-        label="Loss",
-        linestyle="-" if configuration["line_loss"] else "",
-        marker="." if configuration["scatter_loss"] else "",
-    )
-    axes.plot(
-        range(len(precision)),
-        precision,
-        label="Precision",
-        linestyle="-" if configuration["line_precision"] else "",
-        marker="." if configuration["scatter_precision"] else "",
-    )
+    for loss in losses:
+        axes.plot(
+            range(len(loss)),
+            loss,
+            label="Loss",
+            linestyle="-" if configuration["line_loss"] else "",
+            marker="." if configuration["scatter_loss"] else "",
+        )
+    for precision in precisions:
+        axes.plot(
+            range(len(precision)),
+            precision,
+            label="Precision",
+            linestyle="-" if configuration["line_precision"] else "",
+            marker="." if configuration["scatter_precision"] else "",
+        )
     axes.legend()  # This must remain after the axes.plot() calls.
     plt.show()
 
@@ -62,16 +64,23 @@ def make_parser(subparsers):
         description="This command can be used to draw graphs of data related to"
         " machine learning loss.",
     )
-    parser.add_argument("file", help="The JSON file that has the loss data to graph.")
+    parser.add_argument(
+        "file", help="The JSON file that has the loss data to graph.", nargs="+"
+    )
 
 
 # -----------------------------------------------------------------------------
 #                                                       implementation details
 # -----------------------------------------------------------------------------
-def _read_loss_data(file_path):
-    with open(os.path.join(file_path)) as loss_file:
-        data = json.load(loss_file)
-    return numpy.array(data["loss"]), numpy.array(data["precision"])
+def _read_loss_data(file_paths):
+    losses = []
+    precisions = []
+    for file_path in file_paths:
+        with open(os.path.join(file_path)) as loss_file:
+            data = json.load(loss_file)
+        losses.append(numpy.array(data["loss"]))
+        precisions.append(numpy.array(data["precision"]))
+    return losses, precisions
 
 
 def _make_axes(figure):
@@ -89,19 +98,23 @@ def _make_axes(figure):
     return axes
 
 
-# TODO Need to get a good curve fit to the data. See issue #7.
+def _graph_regression(axes, data):
+    """
+    .. todo:: See issue #7
+    """
+    regression = sklearn.linear_model.LinearRegression()
+    x_data = numpy.arange(len(data))  # pylint: disable=invalid-name
+    regression.fit(x_data.reshape(-1, 1), numpy.array(data).reshape(-1, 1))
+    # x_data = numpy.arange(0.0, len(data), 0.1)
+    x_data = numpy.linspace(0.0, len(data), 100)
+    prediction = regression.predict(x_data.reshape(-1, 1))
+    axes.plot(x_data, prediction)
 
-#def _graph_regression(axes, data):
-#    regression = sklearn.linear_model.LinearRegression()
-#    x = numpy.arange(len(data))  # pylint: disable=invalid-name
-#    regression.fit(x.reshape(-1, 1), numpy.array(data).reshape(-1, 1))
-#    #x = numpy.arange(0.0, len(data), 0.1)
-#    x = numpy.linspace(0.0, len(data), 100)
-#    prediction = regression.predict(x.reshape(-1, 1))
-#    axes.plot(x, prediction)
 
-
-#def _graph_fit(axes, data):
-#    interpolation = scipy.interpolate.interp1d(range(len(data)), data)
-#    x = numpy.linspace(0, len(data), 100)
-#    axes.plot(x, interpolation(x))
+def _graph_fit(axes, data):
+    """
+    .. todo:: See issue #7
+    """
+    interpolation = scipy.interpolate.interp1d(range(len(data)), data)
+    x_data = numpy.linspace(0, len(data), 100)
+    axes.plot(x_data, interpolation(x_data))
