@@ -2,10 +2,10 @@
 
 import json
 import os.path
-import pdb
 
 import matplotlib.pyplot as plt
 import numpy
+import scipy.interpolate
 import sklearn.linear_model
 
 
@@ -28,10 +28,19 @@ def main(arguments, configuration):
     loss, precision = _read_loss_data(arguments.file)
     figure = plt.figure(figsize=(15, 10))
     axes = _make_axes(figure)
-    _plot_scatter_data(
-        axes,
-        loss if configuration["scatter_loss"] else None,
-        precision if configuration["scatter_precision"] else None,
+    axes.plot(
+        range(len(loss)),
+        loss,
+        label="Loss",
+        linestyle="-" if configuration["line_loss"] else "",
+        marker="." if configuration["scatter_loss"] else "",
+    )
+    axes.plot(
+        range(len(precision)),
+        precision,
+        label="Precision",
+        linestyle="-" if configuration["line_precision"] else "",
+        marker="." if configuration["scatter_precision"] else "",
     )
     axes.legend()  # This must remain after the axes.plot() calls.
     plt.show()
@@ -65,14 +74,6 @@ def _read_loss_data(file_path):
     return numpy.array(data["loss"]), numpy.array(data["precision"])
 
 
-def _plot_scatter_data(axes, loss=None, precision=None):
-    if loss is not None:
-        axes.plot(range(len(loss)), loss, label="Loss", linestyle="", marker=".")
-    if precision is not None:
-        axes.plot(range(len(precision)), precision, label="Precision",
-                linestyle="", marker=".")
-
-
 def _make_axes(figure):
     axes = figure.add_subplot(1, 1, 1)
     axes.set_title("Loss")
@@ -88,9 +89,19 @@ def _make_axes(figure):
     return axes
 
 
-def _graph_regression(axes, data):
-    regression = sklearn.linear_model.LinearRegression()
-    x = numpy.arange(len(data))  # pylint: disable=invalid-name
-    regression.fit(x.reshape(-1, 1), numpy.array(data).reshape(-1, 1))
-    prediction = regression.predict(x.reshape(-1, 1))
-    axes.plot(x, prediction)
+# TODO Need to get a good curve fit to the data. See issue #7.
+
+#def _graph_regression(axes, data):
+#    regression = sklearn.linear_model.LinearRegression()
+#    x = numpy.arange(len(data))  # pylint: disable=invalid-name
+#    regression.fit(x.reshape(-1, 1), numpy.array(data).reshape(-1, 1))
+#    #x = numpy.arange(0.0, len(data), 0.1)
+#    x = numpy.linspace(0.0, len(data), 100)
+#    prediction = regression.predict(x.reshape(-1, 1))
+#    axes.plot(x, prediction)
+
+
+#def _graph_fit(axes, data):
+#    interpolation = scipy.interpolate.interp1d(range(len(data)), data)
+#    x = numpy.linspace(0, len(data), 100)
+#    axes.plot(x, interpolation(x))
