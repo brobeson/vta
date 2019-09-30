@@ -24,26 +24,28 @@ def main(arguments, configuration):
         occurred.
     :rtype: int
     """
-    configuration = configuration["loss"]
+    configuration = _augment_configuration(configuration["loss"])
     losses, precisions = _read_loss_data(arguments.file)
     figure = plt.figure(figsize=(15, 10))
     axes = _make_axes(figure)
-    for loss in losses:
-        axes.plot(
-            range(len(loss)),
-            loss,
-            label="Loss",
-            linestyle="-" if configuration["line_loss"] else "",
-            marker="." if configuration["scatter_loss"] else "",
-        )
-    for precision in precisions:
-        axes.plot(
-            range(len(precision)),
-            precision,
-            label="Precision",
-            linestyle="-" if configuration["line_precision"] else "",
-            marker="." if configuration["scatter_precision"] else "",
-        )
+    if configuration["draw_loss"]:
+        for loss in losses:
+            axes.plot(
+                range(len(loss)),
+                loss,
+                label="Loss",
+                linestyle="-" if configuration["line_loss"] else "",
+                marker="." if configuration["scatter_loss"] else "",
+            )
+    if configuration["draw_precision"]:
+        for precision in precisions:
+            axes.plot(
+                range(len(precision)),
+                precision,
+                label="Precision",
+                linestyle="-" if configuration["line_precision"] else "",
+                marker="." if configuration["scatter_precision"] else "",
+            )
     axes.legend()  # This must remain after the axes.plot() calls.
     plt.show()
 
@@ -72,6 +74,16 @@ def make_parser(subparsers):
 # -----------------------------------------------------------------------------
 #                                                       implementation details
 # -----------------------------------------------------------------------------
+def _augment_configuration(configuration):
+    configuration["draw_loss"] = (
+        configuration["scatter_loss"] or configuration["line_loss"]
+    )
+    configuration["draw_precision"] = (
+        configuration["scatter_precision"] or configuration["line_precision"]
+    )
+    return configuration
+
+
 def _read_loss_data(file_paths):
     losses = []
     precisions = []
