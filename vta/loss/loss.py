@@ -25,24 +25,33 @@ def main(arguments, configuration):
     :rtype: int
     """
     configuration = _augment_configuration(configuration["loss"])
-    losses, precisions = _read_loss_data(arguments.file)
+    labels, losses, precisions = _read_loss_data(arguments.file)
+    #losses = _limit_data(
+    #    losses, "loss", configuration["maximum_graphs"], configuration["whats_best"]
+    #)
+    #precisions = _limit_data(
+    #    precisions,
+    #    "precision",
+    #    configuration["maximum_graphs"],
+    #    configuration["whats_best"],
+    #)
     figure = plt.figure(figsize=(15, 10))
     axes = _make_axes(figure)
     if configuration["draw_loss"]:
-        for loss in losses:
+        for label, loss in zip(labels, losses):
             axes.plot(
                 range(len(loss)),
                 loss,
-                label="Loss",
+                label=label,
                 linestyle="-" if configuration["line_loss"] else "",
                 marker="." if configuration["scatter_loss"] else "",
             )
     if configuration["draw_precision"]:
-        for precision in precisions:
+        for label, precision in zip(labels, precisions):
             axes.plot(
                 range(len(precision)),
                 precision,
-                label="Precision",
+                label=label,
                 linestyle="-" if configuration["line_precision"] else "",
                 marker="." if configuration["scatter_precision"] else "",
             )
@@ -81,18 +90,32 @@ def _augment_configuration(configuration):
     configuration["draw_precision"] = (
         configuration["scatter_precision"] or configuration["line_precision"]
     )
+    #configuration["whats_best"] = configuration["whats_best"].lower()
     return configuration
 
 
 def _read_loss_data(file_paths):
+    labels = []
     losses = []
     precisions = []
     for file_path in file_paths:
         with open(os.path.join(file_path)) as loss_file:
             data = json.load(loss_file)
+        if "label" in data:
+            labels.append(data["label"])
+        else:
+            labels.append(file_path)
         losses.append(numpy.array(data["loss"]))
         precisions.append(numpy.array(data["precision"]))
-    return losses, precisions
+    return labels, losses, precisions
+
+
+#def _limit_data(data, data_type, limit, algorithm):
+#    if len(data) <= limit:
+#        return data
+#    criteria = numpy.fromiter((d.mean() for d in data), dtype=float)
+#    data = numpy.array(data)
+#    return data
 
 
 def _make_axes(figure):
