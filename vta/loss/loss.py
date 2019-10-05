@@ -25,16 +25,20 @@ def main(arguments, configuration):
     :rtype: int
     """
     configuration = _augment_configuration(configuration["loss"])
-    labels, losses, precisions = _read_loss_data(arguments.file)
-    #losses = _limit_data(
+    labels, losses, precisions = _read_loss_data(
+        arguments.file,
+        "reject_invalid_data" not in configuration
+        or configuration["reject_invalid_data"],
+    )
+    # losses = _limit_data(
     #    losses, "loss", configuration["maximum_graphs"], configuration["whats_best"]
-    #)
-    #precisions = _limit_data(
+    # )
+    # precisions = _limit_data(
     #    precisions,
     #    "precision",
     #    configuration["maximum_graphs"],
     #    configuration["whats_best"],
-    #)
+    # )
     figure = plt.figure(figsize=(15, 10))
     axes = _make_axes(figure)
     if configuration["draw_loss"]:
@@ -90,27 +94,42 @@ def _augment_configuration(configuration):
     configuration["draw_precision"] = (
         configuration["scatter_precision"] or configuration["line_precision"]
     )
-    #configuration["whats_best"] = configuration["whats_best"].lower()
+    # configuration["whats_best"] = configuration["whats_best"].lower()
     return configuration
 
 
-def _read_loss_data(file_paths):
+def _read_loss_data(file_paths, reject_invalid):
     labels = []
     losses = []
     precisions = []
     for file_path in file_paths:
         with open(os.path.join(file_path)) as loss_file:
             data = json.load(loss_file)
-        if "label" in data:
-            labels.append(data["label"])
-        else:
-            labels.append(file_path)
-        losses.append(numpy.array(data["loss"]))
-        precisions.append(numpy.array(data["precision"]))
+        loss = numpy.array(data["loss"])
+        precision = numpy.array(data["precision"])
+        rejected = False
+        if reject_invalid:
+            if _has_invalid_values(loss):
+                print("warning: non-finite data found in", file_path, "loss data.")
+                rejected = True
+            elif _has_invalid_values(precision):
+                print("warning: non-finite data found in", file_path, "precision data.")
+                rejected = True
+        if not rejected:
+            if "label" in data:
+                labels.append(data["label"])
+            else:
+                labels.append(file_path)
+            losses.append(loss)
+            precisions.append(precision)
     return labels, losses, precisions
 
 
-#def _limit_data(data, data_type, limit, algorithm):
+def _has_invalid_values(data):
+    return numpy.any(numpy.logical_not(numpy.isfinite(data)))
+
+
+# def _limit_data(data, data_type, limit, algorithm):
 #    if len(data) <= limit:
 #        return data
 #    criteria = numpy.fromiter((d.mean() for d in data), dtype=float)
