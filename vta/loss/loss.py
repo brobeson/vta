@@ -72,7 +72,7 @@ def _graph_loss(configuration, axes, losses):
     if not configuration["draw_loss"]:
         return
     vta.loss.data.sort_by_loss(losses, configuration["sort_algorithm"])
-    for loss in losses[0:configuration["maximum_graphs"]]:
+    for loss in losses[0 : configuration["maximum_graphs"]]:
         value = loss.loss_values[-1]
         axes.plot(
             range(len(loss.loss_values)),
@@ -87,7 +87,7 @@ def _graph_precision(configuration, axes, precisions):
     if not configuration["draw_precision"]:
         return
     vta.loss.data.sort_by_precision(precisions, configuration["sort_algorithm"])
-    for precision in precisions[0:configuration["maximum_graphs"]]:
+    for precision in precisions[0 : configuration["maximum_graphs"]]:
         value = precision.precision_values[-1]
         axes.plot(
             range(len(precision.precision_values)),
@@ -128,40 +128,22 @@ def _has_invalid_values(data):
     return numpy.any(numpy.logical_not(numpy.isfinite(data)))
 
 
-# def _limit_data(data, data_type, limit, algorithm):
-#    if len(data) <= limit:
-#        return data
-#    #if data_type == "loss":
-#    #    return _limit_loss_data(data, limit, algorithm)
-#    #if data_type == "precision":
-#    #    return _limit_precision_data(data, limit, algorithm)
-#    #criteria = numpy.fromiter((d.mean() for d in data), dtype=float)
-#    #data = numpy.array(data)
-#    #return data
-#    #sys.exit(f"error: '{algorithm}' is not a valid method for limiting data")
-
-
-# def _limit_loss_data(data, limit, algorithm):
-#    if algorithm == "last":
-
-
 def _make_axes(figure, configuration):
     axes = figure.add_subplot(1, 1, 1)
+    axes.set_xlabel("Training Epoch")
     if configuration["draw_loss"] and configuration["draw_precision"]:
         axes.set_title("Loss and Precision")
+        axes.set_ylabel("Loss / Precision")
     elif configuration["draw_loss"]:
         axes.set_title("Loss")
+        axes.set_ylabel("Loss")
     elif configuration["draw_precision"]:
         axes.set_title("Precision")
+        axes.set_ylabel("Precision")
     axes.autoscale(enable=True, axis="both", tight=True)
-    # axes.grid(
-    #    b=True,
-    #    which="major",
-    #    axis="both",
-    #    color="#101010",
-    #    alpha=0.5,
-    #    linestyle=":",
-    # )
+    axes.grid(
+        b=True, which="major", axis="both", color="#101010", alpha=0.5, linestyle=":"
+    )
     return axes
 
 
