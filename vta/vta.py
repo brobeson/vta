@@ -46,7 +46,6 @@ def make_parser():
         description="VTA is a suite of tools for analysing experimental results"
         " in the computer vision field of visual tracking. VTA provides several"
         " tools for various tasks common in conducting such research.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     master_parser.add_argument(
         "--version",
@@ -54,18 +53,20 @@ def make_parser():
         help="Print the version of VTA, then exit.",
         version="1.0",
     )
-    master_parser.add_argument(
-        "--configuration",
-        help="Specify a VTA configuration file to read. The configuration file"
-        " format is YAML.",
-    )
     subparsers = master_parser.add_subparsers(
         title="VTA commands",
         description="These are the commands available in VTA.",
         dest="command",
     )
-    dataset.make_parser(subparsers)
-    loss.make_parser(subparsers)
+    common_options = argparse.ArgumentParser(add_help=False)
+    common_options.add_argument(
+        "--configuration",
+        help="Specify a VTA configuration file to read. The configuration file"
+        " format is YAML.",
+        default=os.path.expanduser("~/.vta.yml"),
+    )
+    # dataset.make_parser(subparsers)
+    loss.make_parser(subparsers, common_options)
     return master_parser
 
 

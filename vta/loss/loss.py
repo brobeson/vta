@@ -1,5 +1,6 @@
 """The entry module for the vta loss command."""
 
+import argparse
 import json
 
 import matplotlib.pyplot as plt
@@ -37,7 +38,7 @@ def main(arguments, configuration):
     plt.show()
 
 
-def make_parser(subparsers):
+def make_parser(subparsers, common_options):
     """Creates an argument parser for the VTA loss command.
 
     :param subparsers: The subparsers object returned by a call to
@@ -52,6 +53,8 @@ def make_parser(subparsers):
         prog="vta loss",
         description="This command can be used to draw graphs of data related to"
         " machine learning loss.",
+        parents=[common_options],
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "file", help="The JSON file that has the loss data to graph.", nargs="+"
