@@ -1,12 +1,13 @@
 """The entry module for the vta loss command."""
 
 import json
-import os.path
 
 import matplotlib.pyplot as plt
 import numpy
 import scipy.interpolate
 import sklearn.linear_model
+
+import vta.loss.data
 
 
 def main(arguments, configuration):
@@ -25,41 +26,14 @@ def main(arguments, configuration):
     :rtype: int
     """
     configuration = _augment_configuration(configuration["loss"])
-    labels, losses, precisions = _read_loss_data(
-        arguments.file,
-        "reject_invalid_data" not in configuration
-        or configuration["reject_invalid_data"],
-    )
-    # losses = _limit_data(
-    #    losses, "loss", configuration["maximum_graphs"], configuration["whats_best"]
-    # )
-    # precisions = _limit_data(
-    #    precisions,
-    #    "precision",
-    #    configuration["maximum_graphs"],
-    #    configuration["whats_best"],
-    # )
+    losses = _read_loss_data(arguments.file)
+    if configuration["reject_invalid_data"]:
+        losses = [l for l in losses if _filter_invalid_data(l)]
     figure = plt.figure(figsize=(15, 10))
-    axes = _make_axes(figure)
-    if configuration["draw_loss"]:
-        for label, loss in zip(labels, losses):
-            axes.plot(
-                range(len(loss)),
-                loss,
-                label=label,
-                linestyle="-" if configuration["line_loss"] else "",
-                marker="." if configuration["scatter_loss"] else "",
-            )
-    if configuration["draw_precision"]:
-        for label, precision in zip(labels, precisions):
-            axes.plot(
-                range(len(precision)),
-                precision,
-                label=label,
-                linestyle="-" if configuration["line_precision"] else "",
-                marker="." if configuration["scatter_precision"] else "",
-            )
-    axes.legend()  # This must remain after the axes.plot() calls.
+    axes = _make_axes(figure, configuration)
+    _graph_loss(configuration, axes, losses)
+    _graph_precision(configuration, axes, losses)
+    axes.legend()  # This must remain after the data is graphed.
     plt.show()
 
 
@@ -87,6 +61,43 @@ def make_parser(subparsers):
 # -----------------------------------------------------------------------------
 #                                                       implementation details
 # -----------------------------------------------------------------------------
+def _filter_invalid_data(data):
+    if vta.loss.data.has_invalid_values(data):
+        print("warning:", data.label, "has invalid data")
+        return False
+    return True
+
+
+def _graph_loss(configuration, axes, losses):
+    if not configuration["draw_loss"]:
+        return
+    vta.loss.data.sort_by_loss(losses, configuration["sort_algorithm"])
+    for loss in losses[0:configuration["maximum_graphs"]]:
+        value = loss.loss_values[-1]
+        axes.plot(
+            range(len(loss.loss_values)),
+            loss.loss_values,
+            label=f"[{value:.3f}] {loss.label}",
+            linestyle="-" if configuration["line_loss"] else "",
+            marker="." if configuration["scatter_loss"] else "",
+        )
+
+
+def _graph_precision(configuration, axes, precisions):
+    if not configuration["draw_precision"]:
+        return
+    vta.loss.data.sort_by_precision(precisions, configuration["sort_algorithm"])
+    for precision in precisions[0:configuration["maximum_graphs"]]:
+        value = precision.precision_values[-1]
+        axes.plot(
+            range(len(precision.precision_values)),
+            precision.precision_values,
+            label=f"[{value:.3f}] {precision.label}",
+            linestyle="-" if configuration["line_precision"] else "",
+            marker="." if configuration["scatter_precision"] else "",
+        )
+
+
 def _augment_configuration(configuration):
     configuration["draw_loss"] = (
         configuration["scatter_loss"] or configuration["line_loss"]
@@ -94,35 +105,23 @@ def _augment_configuration(configuration):
     configuration["draw_precision"] = (
         configuration["scatter_precision"] or configuration["line_precision"]
     )
-    # configuration["whats_best"] = configuration["whats_best"].lower()
+    # configuration["sort_algorithm"] = configuration["sort_algorithm"].lower()
     return configuration
 
 
-def _read_loss_data(file_paths, reject_invalid):
-    labels = []
-    losses = []
-    precisions = []
+def _read_loss_data(file_paths):
+    losses = vta.loss.data.LossList()
     for file_path in file_paths:
-        with open(os.path.join(file_path)) as loss_file:
+        with open(file_path) as loss_file:
             data = json.load(loss_file)
-        loss = numpy.array(data["loss"])
-        precision = numpy.array(data["precision"])
-        rejected = False
-        if reject_invalid:
-            if _has_invalid_values(loss):
-                print("warning: non-finite data found in", file_path, "loss data.")
-                rejected = True
-            elif _has_invalid_values(precision):
-                print("warning: non-finite data found in", file_path, "precision data.")
-                rejected = True
-        if not rejected:
-            if "label" in data:
-                labels.append(data["label"])
-            else:
-                labels.append(file_path)
-            losses.append(loss)
-            precisions.append(precision)
-    return labels, losses, precisions
+        losses.append(
+            vta.loss.data.Loss(
+                data["label"] if "label" in data else file_path,
+                numpy.array(data["loss"]),
+                numpy.array(data["precision"]),
+            )
+        )
+    return losses
 
 
 def _has_invalid_values(data):
@@ -132,14 +131,28 @@ def _has_invalid_values(data):
 # def _limit_data(data, data_type, limit, algorithm):
 #    if len(data) <= limit:
 #        return data
-#    criteria = numpy.fromiter((d.mean() for d in data), dtype=float)
-#    data = numpy.array(data)
-#    return data
+#    #if data_type == "loss":
+#    #    return _limit_loss_data(data, limit, algorithm)
+#    #if data_type == "precision":
+#    #    return _limit_precision_data(data, limit, algorithm)
+#    #criteria = numpy.fromiter((d.mean() for d in data), dtype=float)
+#    #data = numpy.array(data)
+#    #return data
+#    #sys.exit(f"error: '{algorithm}' is not a valid method for limiting data")
 
 
-def _make_axes(figure):
+# def _limit_loss_data(data, limit, algorithm):
+#    if algorithm == "last":
+
+
+def _make_axes(figure, configuration):
     axes = figure.add_subplot(1, 1, 1)
-    axes.set_title("Loss")
+    if configuration["draw_loss"] and configuration["draw_precision"]:
+        axes.set_title("Loss and Precision")
+    elif configuration["draw_loss"]:
+        axes.set_title("Loss")
+    elif configuration["draw_precision"]:
+        axes.set_title("Precision")
     axes.autoscale(enable=True, axis="both", tight=True)
     # axes.grid(
     #    b=True,
