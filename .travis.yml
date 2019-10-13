@@ -8,7 +8,7 @@ python:
 install:
   - if [[ "${TRAVIS_PYTHON_VERSION}" == "3.7" ]]; then
     pip install --quiet --requirement ci-requirements.txt; fi
-  - pip install --quiet sphinx
+  - pip install --quiet sphinx coveralls
 
 before_script:
   - shopt -s globstar
@@ -19,3 +19,7 @@ script:
   - if [[ "${TRAVIS_PYTHON_VERSION}" == "3.7" ]]; then
     lizard --CCN 10 --arguments 5 --length 100 --warnings_only; fi
   - cd documentation && make html
+  - coverage run -m unittest discover
+
+after_success:
+  coveralls
