@@ -11,7 +11,7 @@ import numpy
 # TODO These constants need to be converted to command line or configuration
 # parameters
 SCORE_DIRECTORY = os.path.expanduser(
-    #os.path.join("~", "repositories", "py-MDNet")
+    # os.path.join("~", "repositories", "py-MDNet")
     "~/repositories/phd/mdnet-data/control_score_data/"
 )
 FRAME = 1
@@ -63,9 +63,7 @@ def make_parser(subparsers):
         " machine learning scores. The scores are understood to be the raw"
         " output of the machine learning algorithm or model during tracking.",
     )
-    parser.add_argument(
-        "sequence", help="The sequence for which to load score data."
-    )
+    parser.add_argument("sequence", help="The sequence for which to load score data.")
 
 
 # -----------------------------------------------------------------------------
@@ -92,11 +90,7 @@ def _graph_score_data(ground_truth, score_threshold, frame_data, sequence):
     frame_data["positive_scores"] = numpy.array(frame_data["positive_scores"])
     frame_data["negative_scores"] = numpy.array(frame_data["negative_scores"])
     _scatter_data(
-        axes,
-        frame_data["positive_scores"],
-        distance_data,
-        "g",
-        label="Target Scores",
+        axes, frame_data["positive_scores"], distance_data, "g", label="Target Scores"
     )
     _scatter_data(
         axes,
@@ -126,12 +120,7 @@ def _make_axes(figure, sequence):
     axes.set_title(f"{sequence} - Frame {FRAME}")
     axes.autoscale(enable=True, axis="both", tight=True)
     axes.grid(
-        b=True,
-        which="major",
-        axis="both",
-        color="#101010",
-        alpha=0.5,
-        linestyle=":",
+        b=True, which="major", axis="both", color="#101010", alpha=0.5, linestyle=":"
     )
     return axes
 
