@@ -7,6 +7,7 @@ import sys
 import yaml
 
 from vta.dataset import dataset
+from vta.graph import graph
 from vta.loss import loss
 
 
@@ -29,6 +30,8 @@ def main():
         configuration = None
     if arguments.command == "dataset":
         return dataset.main(arguments)
+    if arguments.command == "graph":
+        return graph.main(arguments, configuration)
     if arguments.command == "loss":
         return loss.main(arguments, configuration)
     return 0
@@ -64,8 +67,10 @@ def make_parser():
         help="Specify a VTA configuration file to read. The configuration file"
         " format is YAML.",
         default=os.path.expanduser("~/.vta.yml"),
+        metavar="PATH",
     )
     # dataset.make_parser(subparsers)
+    graph.make_parser(subparsers, common_options)
     loss.make_parser(subparsers, common_options)
     return master_parser
 
@@ -81,7 +86,7 @@ def load_configuration(file_path):
     file_path = os.path.expanduser(file_path)
     try:
         with open(file_path) as config_file:
-            configuration = yaml.full_load(config_file)  # pylint: disable=no-member
+            configuration = yaml.load(config_file, yaml.FullLoader)
     except OSError:
         sys.exit(f"I could not open {file_path}.")
     if configuration is None:
