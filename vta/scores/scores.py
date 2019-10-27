@@ -11,7 +11,8 @@ import numpy
 # TODO These constants need to be converted to command line or configuration
 # parameters
 SCORE_DIRECTORY = os.path.expanduser(
-    os.path.join("~", "repositories", "py-MDNet")
+    #os.path.join("~", "repositories", "py-MDNet")
+    "~/repositories/phd/mdnet-data/control_score_data/"
 )
 FRAME = 1
 FRAME_INDEX = 0
@@ -89,12 +90,20 @@ def _graph_score_data(ground_truth, score_threshold, frame_data, sequence):
     axes.axvline(score_threshold, alpha=0.5, color="r", label="Threshold")
 
     frame_data["positive_scores"] = numpy.array(frame_data["positive_scores"])
+    frame_data["negative_scores"] = numpy.array(frame_data["negative_scores"])
     _scatter_data(
         axes,
         frame_data["positive_scores"],
         distance_data,
+        "g",
+        label="Target Scores",
+    )
+    _scatter_data(
+        axes,
+        frame_data["negative_scores"],
+        distance_data,
         "b",
-        label="Candidates",
+        label="Background Scores",
     )
 
     # Draw the data for the top indices
