@@ -2,6 +2,7 @@
 
 import unittest
 
+
 class LossTest(unittest.TestCase):
     """The loss module unit test."""
 
