@@ -7,7 +7,7 @@ python:
 
 install:
   - if [[ "${TRAVIS_PYTHON_VERSION}" == "3.7" ]]; then
-    pip install --quiet --requirement ci-requirements.txt; fi
+    pip install --quiet --requirement ci-requirements.txt;
     pip install --quiet --requirement requirements.txt; fi
   - pip install --quiet sphinx coveralls
 
