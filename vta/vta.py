@@ -81,7 +81,7 @@ def load_configuration(file_path):
     file_path = os.path.expanduser(file_path)
     try:
         with open(file_path) as config_file:
-            configuration = yaml.full_load(config_file)
+            configuration = yaml.full_load(config_file)  # pylint: disable=no-member
     except OSError:
         sys.exit(f"I could not open {file_path}.")
     if configuration is None:
