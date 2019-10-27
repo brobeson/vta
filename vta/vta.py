@@ -1,8 +1,13 @@
 """The main entry point for all VTA commands."""
 
 import argparse
+import os.path
 import sys
+
+import yaml
+
 from vta.dataset import dataset
+from vta.loss import loss
 from vta.scores import scores
 
 
@@ -19,8 +24,14 @@ def main():
     """
     master_parser = make_parser()
     arguments = master_parser.parse_args()
+    if arguments.configuration:
+        configuration = load_configuration(arguments.configuration)
+    else:
+        configuration = None
     if arguments.command == "dataset":
         return dataset.main(arguments)
+    elif arguments.command == "loss":
+        return loss.main(arguments, configuration)
     elif arguments.command == "scores":
         return scores.main(arguments)
     return 0
@@ -50,9 +61,36 @@ def make_parser():
         description="These are the commands available in VTA.",
         dest="command",
     )
+    common_options = argparse.ArgumentParser(add_help=False)
+    common_options.add_argument(
+        "--configuration",
+        help="Specify a VTA configuration file to read. The configuration file"
+        " format is YAML.",
+        default=os.path.expanduser("~/.vta.yml"),
+    )
     dataset.make_parser(subparsers)
     scores.make_parser(subparsers)
+    loss.make_parser(subparsers, common_options)
     return master_parser
+
+
+def load_configuration(file_path):
+    """Load a VTA configuration file.
+
+    :param str file_path: The path to the configuration file.
+    :return: The configuration read from file_path.
+    :rtype: dict
+    :raises OSError: if opening file_path fails.
+    """
+    file_path = os.path.expanduser(file_path)
+    try:
+        with open(file_path) as config_file:
+            configuration = yaml.full_load(config_file)
+    except OSError:
+        sys.exit(f"I could not open {file_path}.")
+    if configuration is None:
+        sys.exit(f"{file_path} does not appear to contain VTA configuration data.")
+    return configuration
 
 
 if __name__ == "__main__":

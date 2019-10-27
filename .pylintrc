@@ -3,7 +3,7 @@ jobs=0
 
 [MESSAGES CONTROL]
 enable=c-extension-no-member
-disable=bad-continuation
+disable=bad-continuation, too-few-public-methods
 
 [REPORTS]
 msg-template='{path}:{line}: [{msg_id} {symbol}] {obj} {msg}'
@@ -18,9 +18,6 @@ notes=FIXME,
       TODO,
       BUG,
       HACK
-
-[FORMAT]
-max-line-length=80
 
 [LOGGING]
 logging-format-style=new

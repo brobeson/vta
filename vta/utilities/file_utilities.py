@@ -63,7 +63,5 @@ class DirectoryValidator:  # pylint: disable=too-many-instance-attributes,too-fe
     def __call__(self, parser, namespace, values, option_string):
         directory = os.path.abspath(os.path.expanduser(values))
         if os.path.exists(directory) and not os.path.isdir(directory):
-            sys.exit(
-                f"error: {directory} already exists and is not a directory"
-            )
+            sys.exit(f"error: {directory} already exists and is not a directory")
         setattr(namespace, option_string, directory)

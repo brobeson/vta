@@ -6,10 +6,7 @@ import vta.dataset.vot
 import vta.utilities.file_utilities
 
 
-SUBSETS = {
-    "otb": ["tb50", "tb100"],
-    "vot": ["2013", "2014", "2015", "2016", "2017"],
-}
+SUBSETS = {"otb": ["tb50", "tb100"], "vot": ["2013", "2014", "2015", "2016", "2017"]}
 
 
 def make_parser(subparsers):
@@ -65,8 +62,7 @@ def make_parser(subparsers):
     parser.add_argument(
         "--force",
         action="store_true",
-        help="If present, download requested data even if it is already"
-        " present.",
+        help="If present, download requested data even if it is already present.",
     )
     parser.add_argument(
         "--sequences",
