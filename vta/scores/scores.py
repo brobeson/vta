@@ -2,7 +2,6 @@
 
 import json
 import os.path
-import pdb
 
 import matplotlib.pyplot as plt
 import numpy

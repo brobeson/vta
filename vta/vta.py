@@ -30,9 +30,9 @@ def main():
         configuration = None
     if arguments.command == "dataset":
         return dataset.main(arguments)
-    elif arguments.command == "loss":
+    if arguments.command == "loss":
         return loss.main(arguments, configuration)
-    elif arguments.command == "scores":
+    if arguments.command == "scores":
         return scores.main(arguments)
     return 0
 
