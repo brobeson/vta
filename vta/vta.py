@@ -7,7 +7,9 @@ import sys
 import yaml
 
 from vta.dataset import dataset
+from vta.iou import iou
 from vta.loss import loss
+from vta.scores import scores
 
 
 def main():
@@ -29,8 +31,12 @@ def main():
         configuration = None
     if arguments.command == "dataset":
         return dataset.main(arguments)
+    if arguments.command == "iou":
+        return iou.main(arguments)
     if arguments.command == "loss":
         return loss.main(arguments, configuration)
+    if arguments.command == "scores":
+        return scores.main(arguments)
     return 0
 
 
@@ -66,7 +72,9 @@ def make_parser():
         default=os.path.expanduser("~/.vta.yml"),
     )
     # dataset.make_parser(subparsers)
+    iou.make_parser(subparsers, common_options)
     loss.make_parser(subparsers, common_options)
+    scores.make_parser(subparsers)
     return master_parser
 
 
