@@ -9,37 +9,49 @@ def main():
     """Entry point for the vta montage application."""
     seq = [
         sequence.draw_label(sequence.draw_bounding_box(frame * 0.5))
-        for frame in sequence.Selection("DragonBaby", [1, 2, 3, 4, 5])
+        for frame in sequence.Selection("DragonBaby", [1, 2, 3, 4, 5, 6])
     ]
-    create_montage(seq)
+    create_montage(seq, sequence.Dimensions(3, 2))
 
 
-def create_montage(frames) -> PIL.Image:
+def create_montage(frames, dimensions: sequence.Dimensions) -> PIL.Image:
     """
     Create a montage from the supplied sequence frames.
 
     :param frames: An iterable container of ``sequence.Frame`` objects.
+    :param sequence.Dimensions dimensions: The dimensions of the montage, measured in columns and
+        rows of images. So ``Dimenions(3, 2)`` will create a montage with six images, in three
+        columns and two rows.
     :returns: A montage image created from the supplied frames.
     :rtype: PIL.Image
     """
     white = (255, 255, 255)
     border = 5
-    montage_size = _calculate_montage_size(frames, border)
+    frame_dimensions = frames[0].dimensions
+    montage_size = _calculate_montage_size(frame_dimensions, dimensions, border)
     montage = PIL.Image.new(
         mode="RGB", size=(montage_size.width, montage_size.height), color=white
     )
     for i, frame in enumerate(frames):
-        montage.paste(frame.image, (border + i * (frame.image.width + border), border))
+        location = _calculate_frame_location(i, frame_dimensions, dimensions, border)
+        montage.paste(frame.image, (location.x, location.y))
     montage.show()
 
 
-def _calculate_montage_size(frames, border) -> sequence.Dimensions:
-    width = 0
-    height = 0
-    for frame in frames:
-        width += frame.image.size[0]
-        height = max(height, frame.image.size[1])
-    return sequence.Dimensions(width + (len(frames) + 1) * border, height + 2 * border)
+def _calculate_montage_size(frame_dimensions, montage_dimensions, border):
+    return sequence.Dimensions(
+        montage_dimensions.width * (frame_dimensions.width + border) + border,
+        montage_dimensions.height * (frame_dimensions.height + border) + border,
+    )
+
+
+def _calculate_frame_location(i, frame_dimensions, montage_dimensions, border):
+    row = i // montage_dimensions.width
+    column = i % montage_dimensions.width
+    return sequence.Point(
+        column * (frame_dimensions.width + border) + border,
+        row * (frame_dimensions.height + border) + border,
+    )
 
 
 if __name__ == "__main__":

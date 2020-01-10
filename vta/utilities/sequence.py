@@ -95,6 +95,21 @@ class Frame:
         """Get the frame's ground truth bounding box."""
         return self.__ground_truth
 
+    @property
+    def width(self) -> int:
+        """Get the width of the frame image, measured in pixels."""
+        return self.image.size[0]
+
+    @property
+    def height(self) -> int:
+        """Get the height of the frame image, measured in pixels."""
+        return self.image.size[1]
+
+    @property
+    def dimensions(self) -> Dimensions:
+        """Get the dimensions of the frame image, measured in pixels."""
+        return Dimensions(self.width, self.height)
+
     def __str__(self) -> str:
         return f"{self.number}: {self.ground_truth}"
 
