@@ -46,6 +46,9 @@ class Dimensions:
     def __mul__(self, scale_factor):
         return Dimensions(self.width * scale_factor, self.height * scale_factor)
 
+    def __truediv__(self, other):
+        return Dimensions(self.width / other.width, self.height / other.height)
+
     def __str__(self):
         return f"{self.width}x{self.height}"
 
@@ -265,6 +268,10 @@ class Selection:
             if frame.number == frame_number:
                 return True
         return False
+
+    def resize_to_width(self, new_width):
+        scale = new_width / self[0].width
+        self.__frames = [frame * scale for frame in self.__frames]
 
 
 # --------------------------------------------------------------------------- implementation details

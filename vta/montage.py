@@ -7,11 +7,29 @@ import vta.utilities.sequence as sequence
 
 def main():
     """Entry point for the vta montage application."""
-    seq = [
-        sequence.draw_label(sequence.draw_bounding_box(frame * 0.5))
-        for frame in sequence.Selection("DragonBaby", [1, 2, 3, 4, 5, 6])
+    sequences = [
+        sequence.Selection("DragonBaby", [1, 2, 3, 4, 5, 6]),
+        sequence.Selection("Basketball", [1, 2, 3, 4, 5, 6]),
     ]
-    create_montage(seq, sequence.Dimensions(3, 2))
+    target_width = 320
+    #for seq in sequences:
+    #    scale = target_width / seq[0].width
+    #    print(scale)
+    #    seq = [frame * scale for frame in seq]
+
+    sequences = [seq.resize_to_width(target_width) for seq in sequences]
+
+    # sequences = [
+    #    [
+    #        sequence.draw_label(sequence.draw_bounding_box(frame * 0.5))
+    #        for frame in sequence.Selection("DragonBaby", [1, 2, 3, 4, 5, 6])
+    #    ],
+    #    [
+    #        sequence.draw_label(sequence.draw_bounding_box(frame * 0.5))
+    #        for frame in sequence.Selection("Basketball", [1, 2, 3, 4, 5, 6])
+    #    ],
+    # ]
+    # create_montage(sequences, sequence.Dimensions(3, 2))
 
 
 def create_montage(frames, dimensions: sequence.Dimensions) -> PIL.Image:
