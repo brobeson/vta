@@ -8,6 +8,7 @@ import yaml
 
 from vta.dataset import dataset
 from vta.loss import loss
+from vta.boxes import boxes
 
 
 def main():
@@ -27,10 +28,16 @@ def main():
         configuration = load_configuration(arguments.configuration)
     else:
         configuration = None
-    if arguments.command == "dataset":
-        return dataset.main(arguments)
-    if arguments.command == "loss":
-        return loss.main(arguments, configuration)
+    try:
+        if arguments.command == "boxes":
+            boxes.main(arguments, configuration)
+        elif arguments.command == "dataset":
+            dataset.main(arguments)
+        elif arguments.command == "loss":
+            loss.main(arguments, configuration)
+    except Exception as error:  # pylint: disable=broad-except
+        print(error)
+        return 1
     return 0
 
 
@@ -65,6 +72,7 @@ def make_parser():
         " format is YAML.",
         default=os.path.expanduser("~/.vta.yml"),
     )
+    boxes.make_parser(subparsers, common_options)
     # dataset.make_parser(subparsers)
     loss.make_parser(subparsers, common_options)
     return master_parser
@@ -86,7 +94,17 @@ def load_configuration(file_path):
         sys.exit(f"I could not open {file_path}.")
     if configuration is None:
         sys.exit(f"{file_path} does not appear to contain VTA configuration data.")
+    _sanitize_paths(configuration)
     return configuration
+
+
+def _sanitize_paths(configuration: dict) -> None:
+    """Make sure all paths in the configuration are usable in file operations."""
+    if "datasets" in configuration:
+        for dset in configuration["datasets"]:
+            configuration["datasets"][dset] = os.path.abspath(
+                os.path.expanduser(configuration["datasets"][dset])
+            )
 
 
 if __name__ == "__main__":
