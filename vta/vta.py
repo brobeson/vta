@@ -9,6 +9,7 @@ import yaml
 from vta.dataset import dataset
 from vta.loss import loss
 from vta.boxes import boxes
+from vta.video import video
 
 
 def main():
@@ -35,6 +36,8 @@ def main():
             dataset.main(arguments)
         elif arguments.command == "loss":
             loss.main(arguments, configuration)
+        elif arguments.command == "video":
+            video.main(arguments, configuration)
     except Exception as error:  # pylint: disable=broad-except
         print(error)
         return 1
@@ -75,6 +78,7 @@ def make_parser():
     boxes.make_parser(subparsers, common_options)
     # dataset.make_parser(subparsers)
     loss.make_parser(subparsers, common_options)
+    video.make_parser(subparsers, common_options)
     return master_parser
 
 
