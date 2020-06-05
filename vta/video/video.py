@@ -3,6 +3,8 @@
 import argparse
 import glob
 import os.path
+import pdb
+import shutil
 
 import cv2
 
@@ -19,9 +21,17 @@ def main(arguments, configuration):
         succeeded. Any other value indicates that an error occurred.
     :rtype: int
     """
-    images, image_path = _load_sequence(
-        configuration["datasets"].values(), arguments.sequence
+    # images, image_path = _load_sequence(
+    #     configuration["datasets"].values(), arguments.sequence
+    # )
+    images = _load_images(
+        os.path.join(
+            os.path.expanduser("~/Downloads/tmft_qualitative_results"),
+            arguments.sequence,
+        ),
+        arguments.sequence,
     )
+    images = _crop_images(images, arguments.sequence)
 
     # cv2.rectangle(image, (10 * i, 10 * i), (100, 100), (0, 0, 255, 255))
     height, width, _ = images[0].shape
@@ -86,19 +96,39 @@ def _load_sequence(datasets: list, sequence: str) -> tuple:
     for dataset in datasets:
         otb_path = os.path.join(dataset, sequence, "img")
         if os.path.exists(otb_path):
-            return (_load_images(otb_path), otb_path)
+            return (_load_images(otb_path, sequence), otb_path)
         vot_path = os.path.join(dataset, sequence, "color")
         if os.path.exists(vot_path):
-            return (_load_images(vot_path), vot_path)
+            return (_load_images(vot_path, sequence), vot_path)
     raise FileNotFoundError(
         f"Cannot find sequence '{sequence}' in the supplied datasets."
     )
 
 
-def _load_images(sequence_path: str) -> list:
+def _load_images(sequence_path: str, sequence) -> list:
     images = []
-    filenames = glob.glob(f"{sequence_path}/*.jpg")
+    filenames = glob.glob(f"{sequence_path}/*.png")
+    filenames = [_sanitize_filename(f, sequence) for f in filenames]
     filenames.sort()
     for filename in filenames:
         images.append(cv2.imread(filename))
+    return images
+
+
+def _sanitize_filename(filename, sequence):
+    source = filename
+    path, base = os.path.split(filename)
+    base, extension = os.path.splitext(base)
+    base = f"{int(base):04}"
+    path = path.replace(sequence, f"{sequence}_renamed")
+    destination = os.path.join(path, base + extension)
+    # shutil.copyfile(source, destination)
+    return destination
+
+
+def _crop_images(images, sequence):
+    if sequence == "Bird1":
+        images = [image[30:430, 85:805] for image in images]
+    elif sequence == "Freeman4":
+        images = [image[30:270, 85:446] for image in images]
     return images
