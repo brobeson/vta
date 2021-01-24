@@ -7,6 +7,7 @@ import sys
 import yaml
 
 from vta.dataset import dataset
+from vta.generate_tables import generate_tables
 from vta.loss import loss
 
 
@@ -31,6 +32,8 @@ def main():
         return dataset.main(arguments)
     if arguments.command == "loss":
         return loss.main(arguments, configuration)
+    if arguments.command == "tables":
+        return generate_tables.main(arguments)
     return 0
 
 
@@ -67,6 +70,7 @@ def make_parser():
     )
     # dataset.make_parser(subparsers)
     loss.make_parser(subparsers, common_options)
+    generate_tables.make_parser(subparsers, common_options)
     return master_parser
 
 
